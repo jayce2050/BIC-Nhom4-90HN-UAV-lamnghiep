@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FPT AgroForest UAV — Nhóm 4 (90HN) Dashboard</title>
+<style>
+  :root{
+    --green:#1F4E3D; --green2:#2D6A4F; --gold:#C0902A; --bg:#F4F6F5;
+    --red:#D9534F; --orange:#E8A33D; --yellow:#E8C547; --gray:#8A8F8C; --okgreen:#4C9A6B;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:#222;}
+  header{background:linear-gradient(120deg,var(--green),var(--green2));color:#fff;padding:28px 24px 22px;}
+  header h1{margin:0 0 4px;font-size:24px;}
+  header p{margin:0;opacity:.9;font-size:14px;}
+  .countdown{display:inline-block;background:rgba(255,255,255,.15);border-radius:8px;padding:8px 16px;margin-top:14px;font-size:14px;}
+  .countdown b{font-size:20px;color:var(--gold);}
+  .linkbar{display:flex;flex-wrap:wrap;gap:10px;padding:16px 24px;background:#fff;border-bottom:1px solid #e3e6e4;position:sticky;top:0;z-index:10;}
+  .linkbar a{text-decoration:none;background:var(--green);color:#fff;padding:9px 14px;border-radius:7px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;}
+  .linkbar a.alt{background:#fff;color:var(--green);border:1.5px solid var(--green);}
+  .linkbar a.pending{background:#fff;color:var(--gray);border:1.5px dashed var(--gray);cursor:default;}
+  nav.tabs{display:flex;gap:4px;padding:0 24px;background:#fff;border-bottom:2px solid #e3e6e4;overflow-x:auto;}
+  nav.tabs button{border:none;background:none;padding:14px 16px;font-size:14px;font-weight:600;color:#666;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;}
+  nav.tabs button.active{color:var(--green);border-bottom-color:var(--gold);}
+  main{padding:22px 24px 60px;max-width:1180px;margin:0 auto;}
+  .panel{display:none;}
+  .panel.active{display:block;animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+  h2.section{font-size:18px;color:var(--green);margin:0 0 14px;border-left:4px solid var(--gold);padding-left:10px;}
+  .grid{display:grid;gap:14px;}
+  .grid.cols3{grid-template-columns:repeat(3,1fr);}
+  .grid.cols4{grid-template-columns:repeat(4,1fr);}
+  @media(max-width:900px){.grid.cols3,.grid.cols4{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:600px){.grid.cols3,.grid.cols4{grid-template-columns:1fr;}}
+  .card{background:#fff;border-radius:10px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.06);border:1px solid #ebeeec;}
+  .stat .num{font-size:26px;font-weight:700;color:var(--green);}
+  .stat .lbl{font-size:12.5px;color:#666;margin-top:2px;}
+  .badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;color:#fff;}
+  .b-cao{background:var(--red);} .b-tb{background:var(--orange);} .b-thap{background:var(--okgreen);}
+  .b-done{background:var(--okgreen);} .b-doing{background:var(--orange);} .b-todo{background:var(--gray);} .b-wait{background:#B07FD1;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{background:#EEF3F0;color:var(--green);text-align:left;padding:9px 10px;font-size:12px;}
+  td{padding:9px 10px;border-bottom:1px solid #eee;vertical-align:top;}
+  tr:hover td{background:#FAFBFA;}
+  .member-card h3{margin:0 0 8px;font-size:15px;color:var(--green);display:flex;align-items:center;gap:8px;}
+  .member-card .role{font-size:11.5px;color:var(--gold);font-weight:600;margin-bottom:8px;display:block;}
+  .member-card ul{margin:0;padding-left:18px;font-size:13px;line-height:1.55;}
+  .timeline{position:relative;margin-top:10px;}
+  .phase{display:flex;gap:14px;margin-bottom:18px;}
+  .phase .dot{width:14px;height:14px;border-radius:50%;background:var(--gold);margin-top:5px;flex-shrink:0;}
+  .phase .body{flex:1;background:#fff;border-radius:10px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+  .phase .body h4{margin:0 0 4px;color:var(--green);font-size:15px;}
+  .phase .body .dates{font-size:12px;color:var(--gold);font-weight:700;margin-bottom:8px;}
+  .note{background:#FFF8E8;border-left:4px solid var(--gold);padding:10px 14px;border-radius:6px;font-size:12.5px;color:#5a4a1f;margin:14px 0;}
+  .pending-embed{border:2px dashed #c9cdd0;border-radius:10px;padding:30px;text-align:center;color:#888;background:#fafafa;}
+  footer{text-align:center;padding:18px;font-size:12px;color:#999;}
+  iframe.formembed{width:100%;height:600px;border:none;border-radius:10px;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌲 FPT AgroForest UAV — Dashboard Nhóm 4 (90HN)</h1>
+  <p>Giám sát cháy rừng &amp; Bản đồ sinh thái 3D · MiniMBA BIC 2026</p>
+  <div class="countdown">Hạn nộp bài: <b>30/06/2026</b> &nbsp;·&nbsp; Cập nhật lần cuối: <b id="lastUpdated">22/06/2026</b></div>
+</header>
+
+<div class="linkbar">
+  <a href="https://docs.google.com/spreadsheets/d/1o_ZFMLPs8j3VRqZZliL7FHfheJI6mKRTppvFDZu4PyA/edit" target="_blank">📊 Google Sheet tổng hợp vấn đề</a>
+  <a class="alt" href="https://fptsoftware362-my.sharepoint.com/personal/anhptt8_fpt_com/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fanhptt8%5Ffpt%5Fcom%2FDocuments%2F1%2E%20MiniMBA%202026%2FNam%202%20K16%2FBIC%2F90HN%2FNh%C3%B3m%204&viewid=6a94c2c3%2Db42b%2D45e3%2D8e79%2D3d970b7683d8" target="_blank">📁 Thư mục SharePoint chung</a>
+  <a href="#ailog">🤖 Điền AI Journey Log</a>
+</div>
+
+<nav class="tabs">
+  <button class="active" data-tab="overview">Tổng quan</button>
+  <button data-tab="timeline">Timeline 22–30/06</button>
+  <button data-tab="members">Công việc theo người</button>
+  <button data-tab="issues">Vấn đề &amp; rủi ro</button>
+  <button data-tab="ailog">AI Journey Log</button>
+</nav>
+
+<main>
+
+  <!-- OVERVIEW -->
+  <section class="panel active" id="overview">
+    <h2 class="section">Tổng quan tiến độ</h2>
+    <div class="grid cols4">
+      <div class="card stat"><div class="num">18</div><div class="lbl">Slide trong FullDeck (gần hoàn chỉnh)</div></div>
+      <div class="card stat"><div class="num">3:45</div><div class="lbl">Thời lượng video hiện tại — cần cắt về ≤3:00</div></div>
+      <div class="card stat"><div class="num">6/20</div><div class="lbl">Mục AI Journey Log đã ghi (mục tiêu ≥20)</div></div>
+      <div class="card stat"><div class="num">8</div><div class="lbl">Ngày còn lại đến hạn nộp bài</div></div>
+    </div>
+
+    <h2 class="section" style="margin-top:24px;">Trạng thái 2 mảng đề tài</h2>
+    <div class="grid cols3">
+      <div class="card">
+        <h3 style="margin:0 0 6px;color:var(--green);font-size:15px;">🔥 Mảng 1 — Giám sát cháy rừng</h3>
+        <p style="font-size:13px;color:#555;margin:0 0 8px;">Dashboard số liệu cháy rừng 2010–2024, case study VN &amp; quốc tế (California, Canada BC), quy trình 6 bước &lt;15 phút.</p>
+        <span class="badge b-done">Dữ liệu: Đủ</span>
+      </div>
+      <div class="card">
+        <h3 style="margin:0 0 6px;color:var(--green);font-size:15px;">🗺 Mảng 2 — Bản đồ sinh thái 3D</h3>
+        <p style="font-size:13px;color:#555;margin:0 0 8px;">Báo cáo thị trường LiDAR/3D Mapping, case study Úc/Canada/Brazil/SANDRO, footage LiDAR Phú Thọ thật.</p>
+        <span class="badge b-done">Dữ liệu: Đủ</span>
+      </div>
+      <div class="card">
+        <h3 style="margin:0 0 6px;color:var(--green);font-size:15px;">⚖️ Pháp lý &amp; vận hành</h3>
+        <p style="font-size:13px;color:#555;margin:0 0 8px;">NĐ 288/2025, TT 78/2026, mẫu phép bay thật. Mentor Thầy Ngọc đã xác nhận, gặp 23/06.</p>
+        <span class="badge b-doing">Cần verify số liệu phạt</span>
+      </div>
+    </div>
+
+    <div class="note">📌 <b>3 việc ưu tiên nhất tuần này:</b> (1) Quang cắt video về ≤3:00 phút · (2) Yến dựng file Excel tài chính 3 năm chi tiết · (3) Tân hợp nhất case study vào FullDeck. Xem chi tiết ở tab "Vấn đề &amp; rủi ro".</div>
+  </section>
+
+  <!-- TIMELINE -->
+  <section class="panel" id="timeline">
+    <h2 class="section">Timeline 22/06 → 30/06/2026</h2>
+    <div class="timeline">
+      <div class="phase">
+        <div class="dot"></div>
+        <div class="body">
+          <h4>Giai đoạn A — Hợp nhất &amp; lấp khoảng trống dữ liệu</h4>
+          <div class="dates">22 – 24/06</div>
+          <ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.6;">
+            <li>Tân: tổng hợp toàn bộ nguồn tham khảo các thành viên vào 1 phụ lục chuẩn hóa</li>
+            <li>Yến: dựng file Excel mô hình tài chính 3 năm chi tiết</li>
+            <li>Quang: chuẩn bị brief cho buổi gặp Mentor (23/06, 10h)</li>
+            <li>Yến: viết bản tổng hợp nội dung sau phỏng vấn ThS. Lưu Hải Âu (đã thực hiện xong)</li>
+            <li>A.Dũng + A.Toàn: rà lại quy trình cảnh báo cháy, đối chiếu case quốc tế</li>
+            <li>Đông: xác nhận phạm vi tài liệu pháp lý, verify số liệu mức phạt</li>
+          </ul>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="dot"></div>
+        <div class="body">
+          <h4>Giai đoạn B — Dựng sản phẩm cuối</h4>
+          <div class="dates">25 – 27/06</div>
+          <ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.6;">
+            <li>Tân: hợp nhất case study VN &amp; quốc tế vào đúng vị trí FullDeck</li>
+            <li>Quang: dựng/cắt lại video ≤3:00; cân nhắc dùng tư liệu thực địa đã thu thập (LiDAR Phú Thọ, drone) nếu phù hợp, rồi voiceover &amp; export bản cuối</li>
+            <li>Cả nhóm: điền AI Journey Log (2–3 mục/người)</li>
+            <li>Tân: viết báo cáo theo cấu trúc 3 phần BIC</li>
+          </ul>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="dot" style="background:var(--red);"></div>
+        <div class="body">
+          <h4>Giai đoạn C — Hoàn thiện &amp; nộp bài</h4>
+          <div class="dates">28 – 30/06</div>
+          <ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.6;">
+            <li>28/06: bản nháp cuối hoàn chỉnh, gửi Mentor góp ý nhanh</li>
+            <li>29/06: chỉnh sửa theo góp ý, kiểm tra chéo, xuất bản PDF + export video</li>
+            <li>30/06: <b>nộp bài trước hạn trong ngày</b> — không chờ giờ chót</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="note">Chi tiết đầy đủ từng đầu việc nằm ở tab "Timeline &amp; công việc" trong <a href="https://docs.google.com/spreadsheets/d/1o_ZFMLPs8j3VRqZZliL7FHfheJI6mKRTppvFDZu4PyA/edit" target="_blank">Google Sheet</a> — cập nhật trạng thái trực tiếp ở đó.</div>
+  </section>
+
+  <!-- MEMBERS -->
+  <section class="panel" id="members">
+    <h2 class="section">Công việc theo từng thành viên</h2>
+    <div class="grid cols3">
+      <div class="card member-card">
+        <h3>👤 Quang (Nhóm trưởng) <span class="badge b-doing">Đang làm</span></h3>
+        <span class="role">Điều phối chung &amp; sản xuất video</span>
+        <ul>
+          <li>Tổng hợp tài liệu thành viên, mời &amp; làm việc với Mentor, tổ chức họp</li>
+          <li>Chuẩn bị brief cho buổi gặp Mentor 23/06, 10h</li>
+          <li>Dựng/cắt video (CapCut, AI), rút gọn ≤3:00</li>
+          <li>Voiceover &amp; export video bản cuối</li>
+        </ul>
+      </div>
+      <div class="card member-card">
+        <h3>👤 Yến <span class="badge b-doing">Đang làm</span></h3>
+        <span class="role">Điều phối AI — Slide, video &amp; tài chính</span>
+        <ul>
+          <li>Đã làm: dashboard HTML, kịch bản video storyboard, tổng hợp slide mẫu FullDeck</li>
+          <li>Dựng file Excel mô hình tài chính 3 năm</li>
+          <li>Viết bản tổng hợp nội dung sau phỏng vấn ThS. Lưu Hải Âu (đã phỏng vấn xong)</li>
+        </ul>
+      </div>
+      <div class="card member-card">
+        <h3>👤 Lan Anh <span class="badge b-doing">Đang làm</span></h3>
+        <span class="role">Pháp lý &amp; liên hệ chuyên gia</span>
+        <ul>
+          <li>Đã đầu mối liên hệ phỏng vấn ThS. Lưu Hải Âu (hoàn thành)</li>
+          <li>Cập nhật mẫu đơn phép bay theo NĐ 288/2025</li>
+          <li>Liên hệ ông Vũ Anh Tú (FPT UAV)</li>
+        </ul>
+      </div>
+      <div class="card member-card">
+        <h3>👤 A. Dũng <span class="badge b-todo">Chưa làm</span></h3>
+        <span class="role">Mảng 1 — Giám sát rừng</span>
+        <ul>
+          <li>Rà lại quy trình cảnh báo cháy 6 bước</li>
+          <li>Đối chiếu case quốc tế (California, Canada)</li>
+        </ul>
+      </div>
+      <div class="card member-card">
+        <h3>👤 A. Toàn <span class="badge b-todo">Chưa làm</span></h3>
+        <span class="role">Mảng 1 — Giám sát rừng</span>
+        <ul>
+          <li>Rà số liệu thị trường mảng 1</li>
+          <li>Screen recording dashboard cháy rừng</li>
+        </ul>
+      </div>
+      <div class="card member-card">
+        <h3>👤 Tân (Thư ký) <span class="badge b-todo">Chưa làm</span></h3>
+        <span class="role">Mảng 2 — Bản đồ sinh thái</span>
+        <ul>
+          <li>Tổng hợp nguồn tham khảo 4 thành viên vào 1 phụ lục</li>
+          <li>Hợp nhất case study VN &amp; quốc tế vào FullDeck</li>
+        </ul>
+      </div>
+      <div class="card member-card">
+        <h3>👤 Nam <span class="badge b-todo">Chưa làm</span></h3>
+        <span class="role">Mảng 2 — Bản đồ sinh thái</span>
+        <ul>
+          <li>Hỗ trợ hợp nhất case study Úc/Canada/Brazil</li>
+          <li>Footage video rừng cho video tốt nghiệp</li>
+        </ul>
+      </div>
+      <div class="card member-card">
+        <h3>👤 Đông <span class="badge b-wait">Đang chờ xác nhận</span></h3>
+        <span class="role">Mảng 2 — Lợi thế FPT &amp; pháp lý</span>
+        <ul>
+          <li>Xác nhận phạm vi tài liệu rủi ro pháp lý (bỏ phần logistics?)</li>
+          <li>Verify lại số liệu mức phạt UAV với nguồn gốc</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ISSUES -->
+  <section class="panel" id="issues">
+    <h2 class="section">Vấn đề &amp; rủi ro nổi bật</h2>
+    <table>
+      <tr><th>Vấn đề</th><th>Mức độ</th><th>Người phụ trách</th><th>Trạng thái</th><th>Hạn</th></tr>
+      <tr><td>Video dài 3:45, vượt giới hạn 3:00 phút</td><td><span class="badge b-cao">Cao</span></td><td>Quang</td><td><span class="badge b-todo">Chưa xử lý</span></td><td>27/06</td></tr>
+      <tr><td>Chưa có file Excel tài chính 3 năm chi tiết</td><td><span class="badge b-cao">Cao</span></td><td>Yến</td><td><span class="badge b-todo">Chưa xử lý</span></td><td>24/06</td></tr>
+      <tr><td>Mentor xác nhận</td><td><span class="badge b-thap">Thấp</span></td><td>Quang</td><td><span class="badge b-done">Hoàn thành</span></td><td>22/06</td></tr>
+      <tr><td>Case study Tân &amp; Nam chưa hợp nhất vào FullDeck</td><td><span class="badge b-tb">Trung bình</span></td><td>Tân</td><td><span class="badge b-todo">Chưa xử lý</span></td><td>24/06</td></tr>
+      <tr><td>AI Journey Log mới có 6/20 mục mục tiêu</td><td><span class="badge b-tb">Trung bình</span></td><td>Cả nhóm</td><td><span class="badge b-doing">Đang làm</span></td><td>28/06</td></tr>
+      <tr><td>Số liệu mức phạt UAV (tài liệu Đông) chưa khớp nguồn gốc NĐ144/2021 &amp; NĐ162/2018</td><td><span class="badge b-tb">Trung bình</span></td><td>Đông</td><td><span class="badge b-todo">Chưa xử lý</span></td><td>25/06</td></tr>
+      <tr><td>Mẫu đơn phép bay còn căn cứ NĐ 36/2008 đã hết hiệu lực</td><td><span class="badge b-thap">Thấp</span></td><td>Lan Anh</td><td><span class="badge b-todo">Chưa xử lý</span></td><td>25/06</td></tr>
+      <tr><td>~6/10 rủi ro pháp lý của Đông là về logistics/Drone Delivery — chưa khớp phạm vi đề tài</td><td><span class="badge b-tb">Trung bình</span></td><td>Đông</td><td><span class="badge b-wait">Đang chờ xác nhận</span></td><td>24/06</td></tr>
+      <tr><td>Tổng hợp nội dung sau phỏng vấn ThS. Lưu Hải Âu (phỏng vấn đã xong)</td><td><span class="badge b-tb">Trung bình</span></td><td>Yến</td><td><span class="badge b-doing">Đang làm</span></td><td>26/06</td></tr>
+      <tr><td>Viết báo cáo theo cấu trúc 3 phần BIC</td><td><span class="badge b-tb">Trung bình</span></td><td>Tân</td><td><span class="badge b-doing">Đang làm</span></td><td>25/06</td></tr>
+    </table>
+    <div class="note">Danh sách đầy đủ + 2 tab phân tích khác (Đánh giá đáp ứng BIC, Nguồn tham khảo) nằm trong <a href="https://docs.google.com/spreadsheets/d/1o_ZFMLPs8j3VRqZZliL7FHfheJI6mKRTppvFDZu4PyA/edit" target="_blank">Google Sheet tổng hợp</a>.</div>
+  </section>
+
+  <!-- AI LOG -->
+  <section class="panel" id="ailog">
+    <h2 class="section">AI Journey Log — Nhập liệu</h2>
+    <p style="font-size:13.5px;color:#555;">Mỗi thành viên ghi lại tối thiểu 2–3 lần dùng AI cho phần việc của mình. Dữ liệu tự động đổ vào Google Sheet tổng hợp.</p>
+    <!-- AILOG_EMBED_PLACEHOLDER:START -->
+    <iframe class="formembed" src="https://docs.google.com/forms/d/e/1FAIpQLScbeqyS2Xy0shv0qoZ_v44SThRm2UEKKNsu-B6SPYXmB60X7Q/viewform?embedded=true" title="AI Journey Log Form">Đang tải…</iframe>
+    <p style="font-size:12px;color:#999;margin-top:8px;">Form không hiển thị? Mở trực tiếp: <a href="https://forms.gle/uUChdWE28CRy9UXP9" target="_blank">forms.gle/uUChdWE28CRy9UXP9</a></p>
+    <!-- AILOG_EMBED_PLACEHOLDER:END -->
+  </section>
+
+</main>
+
+<footer>FPT AgroForest UAV · Nhóm 4 (90HN) · MiniMBA BIC 2026 · Dashboard tĩnh — cập nhật thủ công, dữ liệu chi tiết &amp; real-time ở Google Sheet</footer>
+
+<script>
+document.querySelectorAll('nav.tabs button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+  });
+});
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    e.preventDefault();
+    const id=a.getAttribute('href').slice(1);
+    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.querySelector('button[data-tab="'+id+'"]').classList.add('active');
+    document.getElementById(id).classList.add('active');
+  });
+});
+</script>
+
+</body>
+</html>
